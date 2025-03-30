@@ -4,38 +4,39 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chat App</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
-    <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            const socket = io();
-            let username = prompt("Enter your username:");
-            let room = prompt("Enter room name:");
-
-            socket.emit("join", { username, room });
-
-            document.getElementById("sendBtn").onclick = function () {
-                let message = document.getElementById("message").value;
-                socket.emit("message", { username, room, message });
-                document.getElementById("message").value = "";
-            };
-
-            socket.on("message", function (msg) {
-                let chat = document.getElementById("chat");
-                let p = document.createElement("p");
-                p.textContent = msg;
-                chat.appendChild(p);
-            });
-
-            window.onbeforeunload = function () {
-                socket.emit("leave", { username, room });
-            };
-        });
-    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.5.4/socket.io.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; }
+        #chat { width: 50%; margin: auto; border: 1px solid #ccc; padding: 10px; }
+        #messages { height: 300px; overflow-y: auto; border: 1px solid #ddd; margin-bottom: 10px; }
+        input { width: 80%; padding: 5px; }
+        button { padding: 5px; }
+    </style>
 </head>
 <body>
-    <h1>Real-Time Chat</h1>
-    <div id="chat"></div>
-    <input type="text" id="message" placeholder="Type your message..." />
-    <button id="sendBtn">Send</button>
+    <h1>Chat App</h1>
+    <div id="chat">
+        <div id="messages"></div>
+        <input id="message" type="text" placeholder="Type a message...">
+        <button onclick="sendMessage()">Send</button>
+    </div>
+
+    <script>
+        var socket = io.connect(window.location.origin);
+
+        socket.on("message", function(msg) {
+            let messagesDiv = document.getElementById("messages");
+            messagesDiv.innerHTML += "<p>" + msg + "</p>";
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        });
+
+        function sendMessage() {
+            let msg = document.getElementById("message").value;
+            if (msg.trim() !== "") {
+                socket.send(msg);
+                document.getElementById("message").value = "";
+            }
+        }
+    </script>
 </body>
 </html>
